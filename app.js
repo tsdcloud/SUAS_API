@@ -3,24 +3,32 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 const https = require('https');
+const http = require('http');
 const path = require("path");
 const fs = require("fs");
 // const http = require('http');
 const { Server } = require('socket.io');
 
 const app = express();
+
 const options = {
   key: fs.readFileSync(path.join(__dirname, "cert", "cert.key"), 'utf-8'),
   cert: fs.readFileSync(path.join(__dirname, "cert", "cert.crt"), 'utf-8')
 }
+// const server = http.createServer(app);
 const server = https.createServer(options, app);
 
 
-const allowedOrigins = [
-  'https://suas.bfcgroupsa.com',
-  'https://suas.api.bfcgroupsa.com',
-  'https://suas.media.bfcgroupsa.com'
-];
+const allowedOrigins = {
+  origin: '*',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+// const allowedOrigins = [
+//   'https://suas.bfcgroupsa.com',
+//   'https://suas.api.bfcgroupsa.com',
+//   'https://suas.media.bfcgroupsa.com'
+// ];
 
 const io = new Server(server, {
   cors: {
@@ -35,7 +43,7 @@ const io = new Server(server, {
   }
 });
 
-app.use(cors());
+app.use(cors(allowedOrigins));
 app.use(bodyParser.json());
 
 const authRoutes = require('./routes/authRoutes');
@@ -89,6 +97,9 @@ app.use("/api/participantsroles", participantRoleRoutes);// route des permission
   // Start the server
   const PORT = process.env.PORT || 9000;
   const ADDRESS = process.env.ADDRESS || '0.0.0.0';
+  // server.listen(PORT, () => {
+  //   console.log(`Server listening on ${PORT}`);
+  // });
   server.listen(PORT, ADDRESS, () => {
     console.log(`Server listening on https://${ADDRESS}:${PORT}`);
   });
