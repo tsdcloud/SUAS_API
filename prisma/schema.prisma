@@ -1,0 +1,276 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id                        String             @id @default(uuid())
+  username                  String             @unique
+  referenceNumber           String             @unique
+  email                     String             @unique
+  phone                     String             @unique
+  password                  String
+  name                      String
+  photo                     String?            
+  gender                    Gender?            @default(MALE)
+  isStaff                   Boolean            @default(false)
+  isAdmin                   Boolean            @default(false)
+  isOwner                   Boolean            @default(false)
+  isActive                  Boolean            @default(true)
+  createdBy                 String?
+  updatedBy                 String?
+  userRoleId                String?
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime?          @updatedAt
+  surname                   String?
+  categoriesCreated         Category[]         @relation("CreatedBy")
+  categoriesUpdated         Category[]         @relation("UpdatedBy")
+  eventsApprovedBy          Event[]            @relation("ApprovedBy")
+  eventsCreated             Event[]            @relation("CreatedBy")
+  eventsOwner               Event[]            @relation("OwnerId")
+  eventsUpdated             Event[]            @relation("UpdatedBy")
+  masterOfCeremoniesCreated MasterOfCeremony[] @relation("CreatedBy")
+  masterOfCeremoniesOwner   MasterOfCeremony[] @relation("OwnerId")
+  masterOfCeremoniesUpdated MasterOfCeremony[] @relation("UpdatedBy")
+  messagesCreated           Message[]          @relation("CreatedBy")
+  messagesUpdated           Message[]          @relation("UpdatedBy")
+  participantsApprovedBy    Participant[]      @relation("ApprovedBy")
+  participantsCreated       Participant[]      @relation("CreatedBy")
+  participantsOwner         Participant[]      @relation("OwnerId")
+  participantsUpdated       Participant[]      @relation("UpdatedBy")
+  participantRolesCreated   ParticipantRole[]  @relation("CreatedBy")
+  participantRolesUpdated   ParticipantRole[]  @relation("UpdatedBy")
+  permissionsCreated        Permission[]       @relation("CreatedBy")
+  permissionsUpdated        Permission[]       @relation("UpdatedBy")
+  userRole                  UserRole?          @relation("UserRole", fields: [userRoleId], references: [id])
+  userRolesCreated          UserRole[]         @relation("CreatedBy")
+  userRolesUpdated          UserRole[]         @relation("UpdatedBy")
+  workshopsApprovedBy       Workshop[]         @relation("ApprovedBy")
+  workshopsCreatedBy        Workshop[]         @relation("CreatedBy")
+  workshopsOwner            Workshop[]         @relation("OwnerId")
+  workshopsUpdatedBy        Workshop[]         @relation("UpdatedBy")
+}
+
+model Category {
+  id              String   @id @default(uuid())
+  referenceNumber String   @unique
+  name            String   @unique
+  description     String?
+  photo           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isActive        Boolean  @default(true)
+  createdById     String?
+  updatedById     String?
+  created         User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  updated         User?    @relation("UpdatedBy", fields: [updatedById], references: [id])
+  events          Event[]  @relation("Category")
+}
+
+model Event {
+  id                 String             @id @default(uuid())
+  referenceNumber    String             @unique
+  name               String
+  description        String
+  photo              String             @unique
+  startDate          DateTime
+  endDate            DateTime
+  isApproved         Boolean            @default(false)
+  approvedAt         DateTime?
+  createdById        String?
+  updatedById        String?
+  approvedById       String?
+  ownerId            String
+  categoryId         String
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime?          @updatedAt
+  isPublic           Boolean            @default(false)
+  approved           User?              @relation("ApprovedBy", fields: [approvedById], references: [id])
+  category           Category           @relation("Category", fields: [categoryId], references: [id])
+  created            User?              @relation("CreatedBy", fields: [createdById], references: [id])
+  owner              User               @relation("OwnerId", fields: [ownerId], references: [id])
+  updated            User?              @relation("UpdatedBy", fields: [updatedById], references: [id])
+  masterOfCeremonies MasterOfCeremony[] @relation("Event")
+  workshops          Workshop[]         @relation("Event")
+}
+
+model Workshop {
+  id               String         @id @default(uuid())
+  referenceNumber  String         @unique
+  name             String
+  description      String
+  room             String
+  photo            String
+  numberOfPlaces   Int
+  price            Decimal
+  isOnlineWorkshop Boolean        @default(false)
+  isApproved       Boolean        @default(false)
+  approvedAt       DateTime?
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  createdById      String?
+  updatedById      String?
+  approvedById     String?
+  eventId          String
+  isPublic         Boolean        @default(false)
+  accessKey        String?
+  ownerId          String?
+  status           StatusWorkshop @default(NOTBEGUN)
+  messages         Message[]      @relation("Workshop")
+  participants     Participant[]  @relation("Workshop")
+  approved         User?          @relation("ApprovedBy", fields: [approvedById], references: [id])
+  created          User?          @relation("CreatedBy", fields: [createdById], references: [id])
+  event            Event          @relation("Event", fields: [eventId], references: [id])
+  owner            User?          @relation("OwnerId", fields: [ownerId], references: [id])
+  updated          User?          @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model MasterOfCeremony {
+  id              String   @id @default(uuid())
+  referenceNumber String   @unique
+  description     String
+  createdById     String?
+  updatedById     String?
+  ownerId         String
+  eventId         String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  name            String?
+  created         User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  event           Event    @relation("Event", fields: [eventId], references: [id])
+  owner           User     @relation("OwnerId", fields: [ownerId], references: [id])
+  updated         User?    @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Participant {
+  id                    String          @id @default(uuid())
+  referenceNumber       String?         @unique
+  name                  String
+  description           String
+  participantRoleId     String
+  isApproved            Boolean         @default(false)
+  approvedAt            DateTime?
+  createdById           String?
+  updatedById           String?
+  approvedById          String?
+  workshopId            String
+  ownerId               String
+  isActive              Boolean         @default(true)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  isOnlineParticipation Boolean         @default(false)
+  isActiveMicrophone    Boolean         @default(false)
+  isHandRaised          Boolean         @default(false)
+  photo                 String?
+  messages              Message[]       @relation("Participant")
+  approved              User?           @relation("ApprovedBy", fields: [approvedById], references: [id])
+  created               User?           @relation("CreatedBy", fields: [createdById], references: [id])
+  owner                 User            @relation("OwnerId", fields: [ownerId], references: [id])
+  participantRole       ParticipantRole @relation("ParticipantRole", fields: [participantRoleId], references: [id])
+  updated               User?           @relation("UpdatedBy", fields: [updatedById], references: [id])
+  workshop              Workshop        @relation("Workshop", fields: [workshopId], references: [id])
+}
+
+model Message {
+  id              String      @id @default(uuid())
+  referenceNumber String      @unique
+  content         String
+  messageType     MessageType @default(TEXT)
+  workshopId      String
+  participantId   String
+  createdById     String?
+  updatedById     String?
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  urlFile         String?
+  tag             Tags?
+  created         User?       @relation("CreatedBy", fields: [createdById], references: [id])
+  participant     Participant @relation("Participant", fields: [participantId], references: [id])
+  updated         User?       @relation("UpdatedBy", fields: [updatedById], references: [id])
+  workshop        Workshop    @relation("Workshop", fields: [workshopId], references: [id])
+}
+
+model Permission {
+  id              String   @id @default(uuid())
+  referenceNumber String   @unique
+  name            String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String?
+  updatedById     String?
+  isActive        Boolean  @default(true)
+  created         User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  updated         User?    @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model UserRole {
+  id              String    @id @default(uuid())
+  referenceNumber String    @unique
+  name            String    @unique
+  permissionList  String[]
+  createdById     String?
+  updatedById     String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @updatedAt
+  users           User[]    @relation("UserRole")
+  created         User?     @relation("CreatedBy", fields: [createdById], references: [id])
+  updated         User?     @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model ParticipantRole {
+  id              String        @id @default(uuid())
+  referenceNumber String        @unique
+  name            String        @unique
+  permissionList  String[]
+  createdById     String?
+  updatedById     String?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime?     @default(now())
+  updatedAt       DateTime?     @updatedAt
+  participants    Participant[] @relation("ParticipantRole")
+  created         User?         @relation("CreatedBy", fields: [createdById], references: [id])
+  updated         User?         @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
+
+model TokenBlacklist {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  createdAt DateTime @default(now())
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum StatusWorkshop {
+  NOTBEGUN
+  STARTED
+  ONGOING
+  FINISHED
+}
+
+enum MessageType {
+  TEXT
+  FILE
+  OTHER
+}
+
+enum Tags {
+  SUPPORT
+  MODERATOR
+}
