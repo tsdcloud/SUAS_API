@@ -97,9 +97,9 @@ app.use("/api/participantsroles", participantRoleRoutes);// route des permission
   // Start the server
   const PORT = process.env.PORT || 9000;
   const ADDRESS = process.env.ADDRESS || '0.0.0.0';
-  // server.listen(PORT, () => {
-  //   console.log(`Server listening on ${PORT}`);
-  // });
-  server.listen(PORT, ADDRESS, () => {
-    console.log(`Server listening on https://${ADDRESS}:${PORT}`);
+  server.listen(PORT, () => {
+    console.log(`Server listening on ${PORT}`);
   });
+  // server.listen(PORT, ADDRESS, () => {
+  //   console.log(`Server listening on https://${ADDRESS}:${PORT}`);
+  // });
