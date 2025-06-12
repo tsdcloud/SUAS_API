@@ -6,6 +6,17 @@ const fs = require('fs');
 const ResponseHandler = require('../utils/responseHandler');
 require("dotenv").config(); 
 
+// Création automatique du dossier uploads s'il n'existe pas
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    try {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+        console.log('✅ Dossier uploads créé avec succès');
+    } catch (error) {
+        console.error('❌ Erreur lors de la création du dossier uploads:', error);
+    }
+}
+
 // const storage = multer.diskStorage({
 //     destination: (req, file, cb) => {
 //         const uploadFile = path.join(__dirname,'..', 'uploads');
@@ -70,6 +81,15 @@ exports.upload = multer({
 //       res.status(500).json({ message: 'Error uploading files.' });
 //   }
 // };
+
+// Fonction utilitaire pour construire l'URL
+const buildFileUrl = (filename) => {
+    if (process.env.USE_FULL_URL === 'true') {
+        return `https://${process.env.ADDRESS}/api/files/download/${filename}`;
+    }
+    return `https://${process.env.ADDRESS}:${process.env.PORT}/api/files/download/${filename}`;
+};
+
 exports.uploadFile = (req, res) => {
     try {
         if (!req.files || Object.keys(req.files).length === 0) {
@@ -87,7 +107,7 @@ exports.uploadFile = (req, res) => {
             return {
                 filename: newFilename,
                 filePath,
-                url: `https://${process.env.ADDRESS}:${process.env.PORT}/api/files/download/${newFilename}`,
+                url: buildFileUrl(newFilename),
             };
         });
   
@@ -125,7 +145,7 @@ exports.uploadFile = (req, res) => {
     }
     
     return ResponseHandler.success(res, { 
-        fileUrl: `https://${process.env.ADDRESS}:${process.env.PORT}/file/download/${path.basename(filePath)}` 
+        fileUrl: buildFileUrl(path.basename(filePath))
     });
 }
 
