@@ -1,611 +1,544 @@
-// const bcrypt = require('bcryptjs');
-// const { PrismaClient } = require('@prisma/client');
-// const prisma = new PrismaClient();
-// const jwt = require('jsonwebtoken');
-// const { DateTime } = require('luxon');
-// const generateUniqueReferenceNumber = require("../utils/utils");
-// const messageCreateSerializer = require('../serializers/messageCreateSerializer');
-// const messageResponseSerializer = require('../serializers/messageResponseSerializer');
-// const messageDetailResponseSerializer = require('../serializers/messageDetailResponseSerializer');
-// const userResponseSerializer = require('../serializers/userResponseSerializer');
-
-// // Fonction pour créer un nouvel message
-// exports.createMessage = async (req, res) => {
-//   // Extraction des données de la requête
-//   const { 
-//     workshopId,
-//     content,
-//     urlFile,
-//     messageType,
-//     participantId } = req.body;
-
-//   try {
-//     // Validation des données d'entrée
-//     const { error } = messageCreateSerializer.validate(req.body);
-//     if (error) {
-//       return res.status(400).json({ error: error.details[0].message });
-//     }
-
-//     // Vérification des contraintes d'unicité
-//     // const existingmessage = await prisma.message.findFirst({
-//     //   where: { 
-//     //     workshopId,
-//     //     ownerId,
-//     //  }
-//     // });
-//     // if (existingmessage) {
-//     //   return res.status(400).json({ error: 'The message also exist!' });
-//     // }
-
-//     // Génération du numéro de référence unique
-//     const referenceNumber = await generateUniqueReferenceNumber(prisma.message);
-//     console.log(referenceNumber);
-
-//     // Création de l'événement avec Prisma
-//     const newmessage = await prisma.message.create({
-//       data: {
-//         workshopId,
-//         content,
-//         messageType,
-//         participantId,
-//         urlFile : urlFile || null,
-//         referenceNumber,
-//         isActive: true,
-//         createdById: req.userId,
-//         createdAt: DateTime.now().toJSDate(),
-//       },
-//     });
-
-//     // Réponse avec l'événement créé
-//     return res.status(201).json(newmessage);
-//   } catch (error) {
-//     console.error('Erreur lors de la création de l\'événement :', error);
-//     return res.status(500).json({ error: 'Erreur interne du serveur' });
-//   }
-// };
-
-  
-  
-//   // Fonction pour récupérer tous les messages avec pagination
-//   exports.getMessages = async (req, res) => {
-//     const { page = 1, limit = 100 } = req.query;
-  
-//     try {
-//       const messages = await prisma.message.findMany({
-//         skip: (page - 1) * limit,
-//         take: parseInt(limit),
-//         where: {
-//           isActive: true,
-//         },
-//         orderBy: {
-//           createdAt: 'asc', // Utilisez 'asc' pour un tri croissant ou 'desc' pour un tri décroissant
-//         },
-//       });
-  
-//       const formatedMessages = messages.map(messageResponseSerializer);
-//       return res.status(200).json(formatedMessages);
-//     } catch (error) {
-//       console.error('Erreur lors de la récupération des messages :', error);
-//       return res.status(500).json({ error: 'Erreur interne du serveur' });
-//     }
-//   };
-//   // Fonction pour récupérer tous les messages avec pagination
-//   exports.getMessagesInactifs = async (req, res) => {
-//     const { page = 1, limit = 100 } = req.query;
-  
-//     try {
-//       const messages = await prisma.message.findMany({
-//         skip: (page - 1) * limit,
-//         take: parseInt(limit),
-//         where: {
-//           isActive: false,
-//         },
-//         orderBy: {
-//           createdAt: 'asc', // Utilisez 'asc' pour un tri croissant ou 'desc' pour un tri décroissant
-//         },
-//       });
-  
-//       const formatedMessages = messages.map(messageResponseSerializer);
-//       return res.status(200).json(formatedMessages);
-//     } catch (error) {
-//       console.error('Erreur lors de la récupération des messages :', error);
-//       return res.status(500).json({ error: 'Erreur interne du serveur' });
-//     }
-//   };
-  
-//   // Fonction pour récupérer un message par son ID
-//   exports.getMessage = async (req, res) => {
-//     console.log("getmessage ok");
-//     const { id } = req.params;
-  
-//     try {
-//       const message = await prisma.message.findUnique({
-//         where: {
-//           id: id, // Assurez-vous que l'ID est utilisé tel quel (string)
-//         },
-//         include: {
-//             created: true,
-//             updated: true,
-//             workshop: true,
-//             participant: true,
-//         },
-//       });
-  
-//       // Vérification de l'existence de la message
-//       if (!message) {
-//         return res.status(404).json({ error: 'message non trouvé' });
-//       }
-//       if(message.created){
-
-//           message.created=userResponseSerializer(message.created);
-//       }
-//       if(message.updated){
-
-//           message.updated=userResponseSerializer(message.updated);
-//       }
-  
-//       // Réponse avec la message trouvé
-//       return res.status(200).json(messageDetailResponseSerializer(message));
-//     } catch (error) {
-//       console.error('Erreur lors de la récupération de la message :', error);
-//       return res.status(500).json({ error: 'Erreur interne du serveur' });
-//     }
-//   };
-  
-//   // Fonction pour mettre à jour un message
-//   exports.updateMessage = async (req, res) => {
-//     const { id } = req.params;
-//     const {
-//         workshopId,
-//         content,
-//         urlFile,
-//         messageType,
-//         participantId 
-//     } = req.body;
-  
-//     try {
-//       // Validation des données d'entrée
-//       const { error } = messageCreateSerializer.validate(req.body);
-//       if (error) {
-//         return res.status(400).json({ error: error.details[0].message });
-//       }
-  
-//       // Mise à jour de la message
-//       const updatedMessage = await prisma.message.update({
-//         where: {
-//           id: id,
-//         },
-//         data: {
-//             workshopId,
-//             content,
-//             messageType,
-//             participantId,
-//             urlFile : urlFile || null,
-//             updatedById: req.userId,
-//             updatedAt: DateTime.now().toJSDate(), // Utilisez DateTime.now().toJSDate() pour obtenir une date sérialisable
-//         }
-//       });
-  
-//       // Récupération de la message mise à jour
-//       const message = await prisma.message.findUnique({
-//         where: {
-//           id: id,
-//         },
-//         include: {
-//             created: true,
-//             updated: true,
-//             workshop: true,
-//             participant: true,
-//         },
-//       });
-  
-//         if (!message) {
-//         return res.status(404).json({ error: 'message non trouvé' });
-//         }
-//         if(message.created){
-
-//         message.created=userResponseSerializer(message.created);
-//         }
-//         if(message.updated){
-
-//             message.updated=userResponseSerializer(message.updated);
-//         }
-//       // Réponse avec la message mise à jour
-//       return res.status(200).json(messageDetailResponseSerializer(message));
-//     } catch (error) {
-//       console.error('Erreur lors de la mise à jour de la message :', error);
-//       return res.status(500).json({ error: 'Erreur interne du serveur' });
-//     }
-//   };
-  
-//   exports.deleteMessage = async (req, res) => {
-//     const { id } = req.params;
-  
-//     // Recherche de l'message par nom d'message
-//     const queryMessage = await prisma.message.findUnique({
-//       where: {
-//         id: id,
-//         isActive: true
-//       },
-//     });
-  
-//     // Vérification de l'message
-//     if (!queryMessage) {
-//       return res.status(404).json({ error: 'message non trouvé' });
-//     }
-  
-//     try {
-//       // Mise à jour de la message pour une suppression douce
-//       const deletedMessage = await prisma.message.update({
-//         where: {
-//           id: id, // Assurez-vous que l'ID est utilisé tel quel (string)
-//         },
-//         data: {
-//           isActive: false,
-//           updatedById: req.userId,
-//           updatedAt: DateTime.now().toJSDate(), // Utilisez DateTime.now().toJSDate() pour obtenir une date sérialisable
-//         },
-//       });
-  
-//       if (!deletedMessage) {
-//         return res.status(404).json({ error: 'message non trouvé' });
-//       }
-  
-//       // Réponse de suppression réussie
-//       return res.status(204).send();
-//     } catch (error) {
-//       console.error('Erreur lors de la suppression de la message :', error);
-//       return res.status(500).json({ error: 'Erreur interne du serveur' });
-//     }
-//   };
-  
-//   // Fonction pour restorer un message
-//   exports.restoreMessage = async (req, res) => {
-//     const { id } = req.params;
-  
-//     // Recherche de l'message par nom d'message
-//     const queryMessage = await prisma.message.findUnique({
-//       where: {
-//         id: id,
-//         isActive: false
-//       },
-//     });
-  
-//     // Vérification de l'message
-//     if (!queryMessage) {
-//       return res.status(404).json({ error: 'message non trouvé' });
-//     }
-  
-//     try {
-//       // Mise à jour de la message pour une suppression douce
-//       const restoredMessage = await prisma.message.update({
-//         where: {
-//           id: id, // Assurez-vous que l'ID est utilisé tel quel (string)
-//         },
-//         data: {
-//           isActive: true,
-//           updatedById: req.userId,
-//           updatedAt: DateTime.now().toJSDate(), // Utilisez DateTime.now().toJSDate() pour obtenir une date sérialisable
-//         },
-//       });
-  
-//       if (!restoredMessage) {
-//         return res.status(404).json({ error: 'message non trouvé' });
-//       }
-  
-//       // Réponse de suppression réussie
-//       return res.status(200).send();
-//     } catch (error) {
-//       console.error('Erreur lors de la restauration de la message :', error);
-//       return res.status(500).json({ error: 'Erreur interne du serveur' });
-//     }
-//   };
-//   // Export des fonctions du contrôleur
-//   module.exports = exports;
-
-// Importer l'instance socket.io
+const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const jwt = require('jsonwebtoken');
 const { DateTime } = require('luxon');
 const generateUniqueReferenceNumber = require("../utils/utils");
 const messageCreateSerializer = require('../serializers/messageCreateSerializer');
 const messageResponseSerializer = require('../serializers/messageResponseSerializer');
 const messageDetailResponseSerializer = require('../serializers/messageDetailResponseSerializer');
 const userResponseSerializer = require('../serializers/userResponseSerializer');
+const participantResponseSerializer = require('../serializers/participantResponseSerializer');
+const participantRoleResponseSerializer = require('../serializers/participantRoleResponseSerializer');
+const ResponseHandler = require('../utils/responseHandler');
 
-module.exports = (io) => {
+// Fonction pour créer un nouvel message
+exports.createMessage = async (req, res) => {
+  console.log('Endpoint: POST /messages/create');
+  console.log('Request Body:', req.body);
+
+  // Extraction des données de la requête
+  const { 
+    workshopId,
+    content,
+    urlFile,
+    messageType,
+    participantId } = req.body;
+
+  try {
+    // Validation des données d'entrée
+    const { error } = messageCreateSerializer.validate(req.body);
+    if (error) {
+      console.log('Validation Error:', error.details[0].message);
+      return ResponseHandler.error(res, error.details[0].message, 'BAD_REQUEST');
+    }
+
+    // Génération du numéro de référence unique
+    const referenceNumber = await generateUniqueReferenceNumber(prisma.message);
+
+    // Création de l'événement avec Prisma
+    const newMessage = await prisma.message.create({
+      data: {
+        workshopId,
+        content,
+        messageType,
+        participantId,
+        urlFile : urlFile || null,
+        referenceNumber,
+        isActive: true,
+        createdById: req.userId,
+        createdAt: DateTime.now().toJSDate(),
+      },
+    });
+
+    console.log('Message created successfully:', newMessage);
+    return ResponseHandler.success(res, newMessage, 'CREATED');
+  } catch (error) {
+    console.error('Error creating message:', error);
+    return ResponseHandler.error(res, 'Erreur lors de la création du message');
+  }
+};
+
+// Fonction pour récupérer tous les messages avec pagination
+exports.getMessages = async (req, res) => {
+  console.log('Endpoint: GET /messages');
+  console.log('Query Parameters:', req.query);
+
+  try {
+    // Liste des champs de tri valides
+    const validSortFields = [
+      'id', 'referenceNumber', 'content', 'messageType', 'workshopId',
+      'participantId', 'createdById', 'updatedById', 'isActive',
+      'createdAt', 'updatedAt', 'urlFile', 'tag'
+    ];
+
+    // Récupération des paramètres de pagination depuis la requête
+    const page = parseInt(req.query.page) || 1;
+    const requestedLimit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const requestedSortBy = req.query.sortBy || 'createdAt';
+    const order = req.query.order?.toUpperCase() === 'ASC' ? 'asc' : 'desc';
+
+    // Validation du champ de tri
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'createdAt';
+
+    if (requestedSortBy && !validSortFields.includes(requestedSortBy)) {
+      console.warn(`Tentative de tri sur un champ invalide: ${requestedSortBy}. Utilisation de createdAt par défaut.`);
+    }
+
+    // Construction des conditions de recherche et de filtrage
+    const whereCondition = buildWhereCondition(req.query);
+
+    // Récupération du nombre total de messages
+    const total = await prisma.message.count({ where: whereCondition });
+
+    // Protection contre les performances
+    const MAX_FOR_UNLIMITED_QUERY = 1000;
+    if (requestedLimit === -1 && total > MAX_FOR_UNLIMITED_QUERY) {
+      console.log('Error: Too many results requested without pagination');
+      return ResponseHandler.error(
+        res,
+        `La récupération de tous les messages est limitée à ${MAX_FOR_UNLIMITED_QUERY} entrées. Veuillez utiliser la pagination.`,
+        'BAD_REQUEST'
+      );
+    }
+
+    // Configuration de la requête
+    const findManyOptions = {
+      where: whereCondition,
+      orderBy: { [sortBy]: order },
+      include: {
+        workshop: true,
+        participant: {
+          include: {
+            participantRole: true,
+            owner: true
+          }
+        },
+        created: true,
+        updated: true
+      }
+    };
+
+    // Ajouter la pagination seulement si limit n'est pas -1
+    if (requestedLimit !== -1) {
+      findManyOptions.skip = (page - 1) * requestedLimit;
+      findManyOptions.take = requestedLimit;
+    }
+
+    // Récupération des messages
+    const messages = await prisma.message.findMany(findManyOptions);
+
+    // Formatage des messages
+    const formattedMessages = formatMessages(messages);
+
+    // Préparation de la réponse
+    const response = {
+      data: formattedMessages,
+      pagination: buildPaginationData(total, page, requestedLimit),
+      filters: buildFiltersData(req.query, sortBy, order),
+      validSortFields
+    };
+
+    console.log('Messages retrieved successfully. Total count:', total);
+    return ResponseHandler.success(res, response);
+  } catch (error) {
+    console.error('Error retrieving messages:', error);
+    return ResponseHandler.error(res, 'Erreur lors de la récupération des messages');
+  }
+};
+
+// Fonction pour récupérer tous les messages inactifs
+exports.getMessagesInactifs = async (req, res) => {
+  console.log('Endpoint: GET /messages/inactifs');
+  console.log('Query Parameters:', req.query);
+
+  const { page = 1, limit = 100 } = req.query;
+
+  try {
+    const messages = await prisma.message.findMany({
+      skip: (page - 1) * limit,
+      take: parseInt(limit),
+      where: { isActive: false },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const formattedMessages = messages.map(messageResponseSerializer);
+    console.log('Inactive messages retrieved successfully. Count:', messages.length);
+    return ResponseHandler.success(res, formattedMessages);
+  } catch (error) {
+    console.error('Error retrieving inactive messages:', error);
+    return ResponseHandler.error(res, 'Erreur lors de la récupération des messages inactifs');
+  }
+};
+
+// Fonction pour récupérer un message par son ID
+exports.getMessage = async (req, res) => {
+  console.log('Endpoint: GET /messages/:id');
+  console.log('Request Parameters:', req.params);
+
+  const { id } = req.params;
+
+  try {
+    const message = await prisma.message.findUnique({
+      where: { id },
+      include: {
+        created: true,
+        updated: true,
+        workshop: true,
+        participant: true,
+      },
+    });
+
+    if (!message) {
+      console.log('Error: Message not found');
+      return ResponseHandler.error(res, 'Message non trouvé', 'NOT_FOUND');
+    }
+
+    const formattedMessage = formatSingleMessage(message);
+    console.log('Message retrieved successfully:', formattedMessage);
+    return ResponseHandler.success(res, formattedMessage);
+  } catch (error) {
+    console.error('Error retrieving message:', error);
+    return ResponseHandler.error(res, 'Erreur lors de la récupération du message');
+  }
+};
+
+// Fonction pour mettre à jour un message
+exports.updateMessage = async (req, res) => {
+  console.log('Endpoint: PUT /messages/:id');
+  console.log('Request Parameters:', req.params);
+  console.log('Request Body:', req.body);
+
+  const { id } = req.params;
+  const {
+    workshopId,
+    content,
+    urlFile,
+    messageType,
+    participantId 
+  } = req.body;
+
+  try {
+    // Validation des données d'entrée
+    const { error } = messageCreateSerializer.validate(req.body);
+    if (error) {
+      console.log('Validation Error:', error.details[0].message);
+      return ResponseHandler.error(res, error.details[0].message, 'BAD_REQUEST');
+    }
+
+    // Mise à jour du message
+    await prisma.message.update({
+      where: { id },
+      data: {
+        workshopId,
+        content,
+        messageType,
+        participantId,
+        urlFile: urlFile || null,
+        updatedById: req.userId,
+        updatedAt: DateTime.now().toJSDate(),
+      }
+    });
+
+    // Récupération du message mis à jour
+    const message = await prisma.message.findUnique({
+      where: { id },
+      include: {
+        created: true,
+        updated: true,
+        workshop: true,
+        participant: true,
+      },
+    });
+
+    if (!message) {
+      console.log('Error: Message not found');
+      return ResponseHandler.error(res, 'Message non trouvé', 'NOT_FOUND');
+    }
+
+    const formattedMessage = formatSingleMessage(message);
+    console.log('Message updated successfully:', formattedMessage);
+    return ResponseHandler.success(res, formattedMessage);
+  } catch (error) {
+    console.error('Error updating message:', error);
+    return ResponseHandler.error(res, 'Erreur lors de la mise à jour du message');
+  }
+};
+
+// Fonction pour supprimer un message
+exports.deleteMessage = async (req, res) => {
+  console.log('Endpoint: DELETE /messages/:id');
+  console.log('Request Parameters:', req.params);
+
+  const { id } = req.params;
+
+  try {
+    const message = await prisma.message.findUnique({
+      where: {
+        id,
+        isActive: true
+      },
+    });
+
+    if (!message) {
+      console.log('Error: Message not found');
+      return ResponseHandler.error(res, 'Message non trouvé', 'NOT_FOUND');
+    }
+
+    await prisma.message.update({
+      where: { id },
+      data: {
+        isActive: false,
+        updatedById: req.userId,
+        updatedAt: DateTime.now().toJSDate(),
+      },
+    });
+
+    console.log('Message deleted successfully');
+    return ResponseHandler.noContent(res);
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    return ResponseHandler.error(res, 'Erreur lors de la suppression du message');
+  }
+};
+
+// Fonction pour restaurer un message
+exports.restoreMessage = async (req, res) => {
+  console.log('Endpoint: PATCH /messages/:id/restore');
+  console.log('Request Parameters:', req.params);
+
+  const { id } = req.params;
+
+  try {
+    const message = await prisma.message.findUnique({
+      where: {
+        id,
+        isActive: false
+      },
+    });
+
+    if (!message) {
+      console.log('Error: Message not found');
+      return ResponseHandler.error(res, 'Message non trouvé', 'NOT_FOUND');
+    }
+
+    await prisma.message.update({
+      where: { id },
+      data: {
+        isActive: true,
+        updatedById: req.userId,
+        updatedAt: DateTime.now().toJSDate(),
+      },
+    });
+
+    console.log('Message restored successfully');
+    return ResponseHandler.success(res, null, 'OK');
+  } catch (error) {
+    console.error('Error restoring message:', error);
+    return ResponseHandler.error(res, 'Erreur lors de la restauration du message');
+  }
+};
+
+// Fonctions utilitaires
+function buildWhereCondition(query) {
+  const {
+    search = '',
+    isActive,
+    messageType,
+    tag,
+    workshopId,
+    participantId,
+    createdById,
+    updatedById,
+    createdAt,
+    updatedAt,
+    createdAtStart,
+    createdAtEnd,
+    updatedAtStart,
+    updatedAtEnd
+  } = query;
+
+  const whereCondition = {
+    OR: [
+      { content: { contains: search, mode: 'insensitive' } },
+      { referenceNumber: { contains: search, mode: 'insensitive' } },
+      { urlFile: { contains: search, mode: 'insensitive' } }
+    ],
+    AND: []
+  };
+
+  // Ajout des filtres booléens et autres
+  if (isActive !== undefined) whereCondition.isActive = isActive === 'true';
+  if (messageType) whereCondition.messageType = messageType;
+  if (tag) whereCondition.tag = tag;
+  if (workshopId) whereCondition.workshopId = workshopId;
+  if (participantId) whereCondition.participantId = participantId;
+  if (createdById) whereCondition.createdById = createdById;
+  if (updatedById) whereCondition.updatedById = updatedById;
+
+  // Gestion des dates
+  addDateConditions(whereCondition, {
+    createdAt,
+    updatedAt,
+    createdAtStart,
+    createdAtEnd,
+    updatedAtStart,
+    updatedAtEnd
+  });
+
+  if (whereCondition.AND.length === 0) {
+    delete whereCondition.AND;
+  }
+
+  return whereCondition;
+}
+
+function addDateConditions(whereCondition, dates) {
+  const {
+    createdAt,
+    updatedAt,
+    createdAtStart,
+    createdAtEnd,
+    updatedAtStart,
+    updatedAtEnd
+  } = dates;
+
+  if (createdAt) {
+    const startOfDay = new Date(createdAt);
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+    whereCondition.AND.push({
+      createdAt: {
+        gte: startOfDay,
+        lt: endOfDay
+      }
+    });
+  } else if (createdAtStart || createdAtEnd) {
+    whereCondition.AND.push({
+      createdAt: {
+        ...(createdAtStart && { gte: new Date(createdAtStart) }),
+        ...(createdAtEnd && { lte: new Date(createdAtEnd) })
+      }
+    });
+  }
+
+  if (updatedAt) {
+    const startOfDay = new Date(updatedAt);
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+    whereCondition.AND.push({
+      updatedAt: {
+        gte: startOfDay,
+        lt: endOfDay
+      }
+    });
+  } else if (updatedAtStart || updatedAtEnd) {
+    whereCondition.AND.push({
+      updatedAt: {
+        ...(updatedAtStart && { gte: new Date(updatedAtStart) }),
+        ...(updatedAtEnd && { lte: new Date(updatedAtEnd) })
+      }
+    });
+  }
+}
+
+function buildPaginationData(total, page, limit) {
+  if (limit === -1) {
+    return {
+      total,
+      page: null,
+      limit: null,
+      totalPages: null,
+      hasNextPage: false,
+      hasPreviousPage: false
+    };
+  }
+
   return {
-    createMessage: async (req, res) => {
-      const { workshopId, content, tag, urlFile, messageType, participantId } = req.body;
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    hasNextPage: page < Math.ceil(total / limit),
+    hasPreviousPage: page > 1
+  };
+}
 
-      try {
-        const { error } = messageCreateSerializer.validate(req.body);
-        if (error) {
-          return res.status(400).json({ error: error.details[0].message });
-        }
+function buildFiltersData(query, sortBy, order) {
+  const {
+    search,
+    createdAt,
+    createdAtStart,
+    createdAtEnd,
+    updatedAt,
+    updatedAtStart,
+    updatedAtEnd,
+    isActive,
+    messageType,
+    tag,
+    workshopId,
+    participantId,
+    createdById,
+    updatedById
+  } = query;
 
-        const referenceNumber = await generateUniqueReferenceNumber(prisma.message);
-        console.log(referenceNumber);
-
-        const newMessage = await prisma.message.create({
-          data: {
-            workshopId,
-            content,
-            messageType,
-            participantId,
-            tag: tag || null,
-            urlFile: urlFile || null,
-            referenceNumber,
-            isActive: true,
-            createdById: req.userId,
-            createdAt: DateTime.now().toJSDate(),
-          },
-        });
-
-        io.emit('messageCreated', newMessage);
-
-        return res.status(201).json(newMessage);
-      } catch (error) {
-        console.error('Error creating message:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
+  return {
+    search,
+    sortBy,
+    order,
+    dates: {
+      createdAt,
+      createdAtStart,
+      createdAtEnd,
+      updatedAt,
+      updatedAtStart,
+      updatedAtEnd
     },
-
-    getMessageByWorkshop: async (req, res) => {
-      const { id, page = 1, limit = 100 } = req.query;
-      // const { id } = req.params;
-
-      try {
-        const messages = await prisma.message.findMany({
-          where: {
-            workshopId: id, // Assurez-vous que l'ID est utilisé tel quel (string)
-            isActive: true,
-          },
-          include: {
-            participant: true,
-            created: true,
-          },
-          skip: (page - 1) * limit,
-          take: parseInt(limit),
-          where: {
-            isActive: true,
-          },
-          orderBy: {
-            createdAt: 'desc', // Utilisez 'asc' pour un tri croissant ou 'desc' pour un tri décroissant
-          }
-
-        });
-        // Formater les objets imbriqués
-        const formattedMessages = messages.map(message => {
-          if (messages.participant) {
-            message.participant = userResponseSerializer(message.participant);
-          }
-          if (messages.created) {
-            message.created = userResponseSerializer(message.created);
-          }
-          return messageResponseSerializer(message);
-        });
-
-        // const formattedMessages = messages.map(messageResponseSerializer);
-        io.emit('messageList', JSON.stringify(formattedMessages));
-        return res.status(200).json(formattedMessages);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des messages :', error);
-        return res.status(500).json({ error: 'Erreur interne du serveur' });
-      }
-    },
-
-    getMessages: async (req, res) => {
-      const { page = 1, limit = 100 } = req.query;
-
-      try {
-        const messages = await prisma.message.findMany({
-          skip: (page - 1) * limit,
-          take: parseInt(limit),
-          where: {
-            isActive: true,
-          },
-          orderBy: {
-            createdAt: 'asc', // Utilisez 'asc' pour un tri croissant ou 'desc' pour un tri décroissant
-          },
-        });
-
-        const formattedMessages = messages.map(messageResponseSerializer);
-        io.emit('messageList', JSON.stringify(formattedMessages));
-        return res.status(200).json(formattedMessages);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des messages :', error);
-        return res.status(500).json({ error: 'Erreur interne du serveur' });
-      }
-    },
-
-    getMessagesInactifs: async (req, res) => {
-      const { page = 1, limit = 100 } = req.query;
-
-      try {
-        const messages = await prisma.message.findMany({
-          skip: (page - 1) * limit,
-          take: parseInt(limit),
-          where: {
-            isActive: false,
-          },
-          orderBy: {
-            createdAt: 'asc', // Utilisez 'asc' pour un tri croissant ou 'desc' pour un tri décroissant
-          },
-        });
-
-        const formattedMessages = messages.map(messageResponseSerializer);
-        io.emit('messageList', JSON.stringify(formattedMessages));
-        return res.status(200).json(formattedMessages);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des messages :', error);
-        return res.status(500).json({ error: 'Erreur interne du serveur' });
-      }
-    },
-
-    getMessage: async (req, res) => {
-      console.log("getmessage ok");
-      const { id } = req.params;
-
-      try {
-        const message = await prisma.message.findUnique({
-          where: {
-            id: id, // Assurez-vous que l'ID est utilisé tel quel (string)
-          },
-          include: {
-            created: true,
-            updated: true,
-            workshop: true,
-            participant: true,
-          },
-        });
-
-        if (!message) {
-          return res.status(404).json({ error: 'Message non trouvé' });
-        }
-        if (message.created) {
-          message.created = userResponseSerializer(message.created);
-        }
-        if (message.updated) {
-          message.updated = userResponseSerializer(message.updated);
-        }
-
-        io.emit('messageList', JSON.stringify(messageDetailResponseSerializer(message)));
-
-        return res.status(200).json(messageDetailResponseSerializer(message));
-      } catch (error) {
-        console.error('Erreur lors de la récupération du message :', error);
-        return res.status(500).json({ error: 'Erreur interne du serveur' });
-      }
-    },
-
-    updateMessage: async (req, res) => {
-      const { id } = req.params;
-      const { workshopId, content, tag, urlFile, messageType, participantId } = req.body;
-
-      try {
-        const { error } = messageCreateSerializer.validate(req.body);
-        if (error) {
-          return res.status(400).json({ error: error.details[0].message });
-        }
-
-        const updatedMessage = await prisma.message.update({
-          where: {
-            id: id,
-          },
-          data: {
-            workshopId,
-            content,
-            messageType,
-            participantId,
-            tag: tag || null,
-            urlFile: urlFile || null,
-            updatedById: req.userId,
-            updatedAt: DateTime.now().toJSDate(),
-          }
-        });
-
-        const message = await prisma.message.findUnique({
-          where: {
-            id: id,
-          },
-          include: {
-            created: true,
-            updated: true,
-            workshop: true,
-            participant: true,
-          },
-        });
-
-        if (!message) {
-          return res.status(404).json({ error: 'Message not found' });
-        }
-
-        if (message.created) {
-          message.created = userResponseSerializer(message.created);
-        }
-        if (message.updated) {
-          message.updated = userResponseSerializer(message.updated);
-        }
-
-        io.emit('messageUpdated', messageDetailResponseSerializer(message));
-
-        return res.status(200).json(messageDetailResponseSerializer(message));
-      } catch (error) {
-        console.error('Error updating message:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-    },
-
-    deleteMessage: async (req, res) => {
-      const { id } = req.params;
-
-      try {
-        const queryMessage = await prisma.message.findUnique({
-          where: {
-            id: id,
-          },
-        });
-
-        if (!queryMessage || !queryMessage.isActive) {
-          return res.status(404).json({ error: 'Message non trouvé' });
-        }
-
-        await prisma.message.update({
-          where: {
-            id: id,
-          },
-          data: {
-            isActive: false,
-            updatedById: req.userId,
-            updatedAt: DateTime.now().toJSDate(),
-          },
-        });
-
-        // Émettre l'événement du message supprimé
-        io.emit('messageDeleted', { id });
-
-        return res.status(204).send();
-      } catch (error) {
-        console.error('Erreur lors de la suppression du message :', error);
-        return res.status(500).json({ error: 'Erreur interne du serveur' });
-      }
-    },
-
-    restoreMessage: async (req, res) => {
-      const { id } = req.params;
-
-      try {
-        const queryMessage = await prisma.message.findUnique({
-          where: {
-            id: id,
-          },
-        });
-
-        if (!queryMessage || queryMessage.isActive) {
-          return res.status(404).json({ error: 'Message non trouvé' });
-        }
-
-        const restoredMessage = await prisma.message.update({
-          where: {
-            id: id,
-          },
-          data: {
-            isActive: true,
-            updatedById: req.userId,
-            updatedAt: DateTime.now().toJSDate(),
-          },
-        });
-
-        // Émettre l'événement du message restauré
-        io.emit('messageRestored', messageDetailResponseSerializer(restoredMessage));
-
-        return res.status(200).send();
-      } catch (error) {
-        console.error('Erreur lors de la restauration du message :', error);
-        return res.status(500).json({ error: 'Erreur interne du serveur' });
-      }
+    attributes: {
+      isActive,
+      messageType,
+      tag,
+      workshopId,
+      participantId,
+      createdById,
+      updatedById
     }
   };
-};
+}
+
+function formatMessages(messages) {
+  return messages.map(message => {
+    const formattedMessage = { ...message };
+    if (message.created) {
+      formattedMessage.created = userResponseSerializer(message.created);
+    }
+    if (message.updated) {
+      formattedMessage.updated = userResponseSerializer(message.updated);
+    }
+    if (message.participant) {
+      const formattedParticipant = { ...message.participant };
+      if (message.participant.participantRole) {
+        formattedParticipant.participantRole = participantRoleResponseSerializer(message.participant.participantRole);
+      }
+      if (message.participant.owner) {
+        formattedParticipant.owner = userResponseSerializer(message.participant.owner);
+      }
+      formattedMessage.participant = participantResponseSerializer(formattedParticipant);
+    }
+    return messageResponseSerializer(formattedMessage);
+  });
+}
+
+function formatSingleMessage(message) {
+  if (message.created) {
+    message.created = userResponseSerializer(message.created);
+  }
+  if (message.updated) {
+    message.updated = userResponseSerializer(message.updated);
+  }
+  return messageDetailResponseSerializer(message);
+}
+
+module.exports = exports;
 

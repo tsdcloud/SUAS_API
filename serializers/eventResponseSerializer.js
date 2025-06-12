@@ -5,6 +5,7 @@ const eventResponseSerializer = (event) => ({
     name: event.name,
     description: event.description,
     photo: event.photo,
+    program: event.program,
     startDate: event.startDate,
     endDate: event.endDate,
     ownerId: event.ownerId,
@@ -21,6 +22,7 @@ const eventResponseSerializer = (event) => ({
     category: event.category,
     masterOfCeremonies: event.masterOfCeremonies,
     workshops: event.workshops,
+    eventParticipants: event.eventParticipants
   });
   
   module.exports = eventResponseSerializer;

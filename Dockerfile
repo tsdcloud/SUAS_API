@@ -1,7 +1,7 @@
 FROM node:20.10
 
 # Créer et utiliser le dossier de travail
-WORKDIR /app
+WORKDIR /app/suas-api
 
 # Copier uniquement les fichiers nécessaires à l'installation
 COPY package*.json ./
@@ -16,8 +16,7 @@ COPY . .
 RUN npx prisma generate
 
 # Exposer le port
-EXPOSE 9000
+EXPOSE 8080
 
 # Lancer l'application
-CMD ["npm", "start"]
-#CMD ["node", "app.js"]
+CMD ["node", "app.js"]

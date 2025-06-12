@@ -3,6 +3,11 @@ const participantResponseSerializer = (participant) => ({
     referenceNumber: participant.referenceNumber,
     workshopId: participant.workshopId,
     name: participant.name,
+    firstName: participant.firstName,
+    companyName: participant.companyName,
+    businessSector: participant.businessSector,
+    functionC: participant.functionC,
+    positionInCompany: participant.positionInCompany,
     photo: participant.photo,
     description: participant.description,
     participantRoleId: participant.participantRoleId,
@@ -21,6 +26,7 @@ const participantResponseSerializer = (participant) => ({
 
     created: participant.created,
     updated: participant.updated,
+    participantRole: participant.participantRole,
     participants: participant.participants
   });
   
