@@ -61,6 +61,12 @@ const participantRoutes = require('./routes/participantRoutes');
 const participantRoleRoutes = require('./routes/participantRoleRoutes');
 const masterOfCeremonyRoutes = require('./routes/masterOfCeremonyRoutes');
 
+
+// Import et utilisation des routes
+const eventParticipantRoutes = require('./routes/eventParticipantRoutes');
+const eventParticipantRoleRoutes = require('./routes/eventParticipantRoleRoutes');
+
+
 // app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -80,6 +86,15 @@ app.use('/api/participants', participantRoutes);
 app.use('/api/masterofceremonies', masterOfCeremonyRoutes);
 app.use("/api/usersroles", userRoleRoutes);// route des permissions
 app.use("/api/participantsroles", participantRoleRoutes);// route des permissions
+//app.use('/api/events', eventRoutes);
+app.use('/api/eventparticipants', eventParticipantRoutes);
+app.use('/api/eventparticipantroles', eventParticipantRoleRoutes);
+//app.use('/api/workshops', workshopRoutes);
+app.use('/api/participants', participantRoutes);
+// app.use('/api/messages', messageRoutes);
+app.use('/api/masterofceremonies', masterOfCeremonyRoutes);
+//app.use("/api/usersroles", userRoleRoutes);// route des permissions
+//app.use("/api/participantsroles", participantRoleRoutes);// route des permissions
 
 // Socket.io connection
 // io.on('connection', (socket) => {
