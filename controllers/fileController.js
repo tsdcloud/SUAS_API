@@ -17,20 +17,7 @@ if (!fs.existsSync(uploadsDir)) {
     }
 }
 
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//         const uploadFile = path.join(__dirname,'..', 'uploads');
-//         if(fs.existsSync(uploadFile)){
-//             fs.mkdirSync(uploadFile, {recursive: true});
-//         }
-//         cb(null, uploadFile);
-//       },
-//       filename: (req, file, cb) => {
-//         cb(null, file.originalname);
-//       },  
-// });
-// exports.upload = multer({ dest: 'uploads/' });
-// exports.upload = multer({ storage });
+
 
 const multerOptions = {
     filename: (req, file, cb) => {
@@ -59,28 +46,7 @@ exports.upload = multer({
     }
    })
 
-// exports.uploadFile = (req, res) => {
-//   console.log("uploadFile");
-//   try {
-//       if (!req.files || Object.keys(req.files).length === 0) {
-//           return res.status(400).json({ message: 'No files uploaded.' });
-//       }
 
-//       const uploadedFiles = req.files.map((file) => {
-//           const filePath = path.join(__dirname, '..', 'uploads', file.filename);
-//           return {
-//               filename: file.filename,
-//               filePath,
-//               url: `https://${process.env.ADDRESS}:${process.env.PORT}/api/files/download/${path.basename(filePath)}`,
-//           };
-//       });
-
-//       return res.send(uploadedFiles);
-//   } catch (error) {
-//       console.error('Error uploading files:', error);
-//       res.status(500).json({ message: 'Error uploading files.' });
-//   }
-// };
 
 // Fonction utilitaire pour construire l'URL
 const buildFileUrl = (filename) => {
