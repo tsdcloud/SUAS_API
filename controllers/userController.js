@@ -745,10 +745,10 @@ exports.forgotPassword = async (req, res) => {
     );
 
     if (!emailResult.success) {
-      return ResponseHandler.error(res, emailResult.error || "Erreur lors de l'envoi de l'email", "EMAIL_ERROR");
+      // return ResponseHandler.error(res, emailResult.error || "Erreur lors de l'envoi de l'email", "EMAIL_ERROR");
     }
 
-    return ResponseHandler.success(res, null, "Email de réinitialisation envoyé");
+    return ResponseHandler.success(res, "Email de réinitialisation envoyé");
   } catch (err) {
     console.error('Erreur lors de l\'envoi de l\'email:', err);
     // return ResponseHandler.error(res, "Erreur serveur");
@@ -786,7 +786,7 @@ exports.resetPassword = async (req, res) => {
       }
     });
 
-    return ResponseHandler.success(res, null, "Mot de passe réinitialisé avec succès.");
+    return ResponseHandler.success(res, "Mot de passe réinitialisé avec succès.");
   } catch (err) {
     console.error(err);
     return ResponseHandler.error(res, "Erreur serveur");

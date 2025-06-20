@@ -26,13 +26,14 @@ const sendEmail = async (to, subject, titre, message, signature, attachments = [
   try {
     // Validation des paramètres obligatoires
     if (!to || !subject || !titre || !message) {
-      return { success: false, error: 'Les paramètres to, subject, titre et message sont obligatoires' };
+      throw new Error('Les paramètres to, subject, titre et message sont obligatoires');
     }
 
     // Préparation des pièces jointes
     const formattedAttachments = attachments.map(attachment => ({
       filename: attachment.filename,
       path: attachment.path,
+      // Ajout du type MIME automatiquement basé sur l'extension
       contentType: getMimeType(attachment.filename)
     }));
 
@@ -63,7 +64,8 @@ const sendEmail = async (to, subject, titre, message, signature, attachments = [
     };
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'email:', error);
-    return { success: false, error: error.message || error };
+    // return { success: false, error: error.message || error };
+    throw error;
   }
 };
 
