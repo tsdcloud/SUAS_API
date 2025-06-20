@@ -31,7 +31,7 @@ exports.createParticipant = async (req, res) => {
       where: { 
         eventId,
         ownerId,
-        eventParticipantRoleId,
+        // eventParticipantRoleId,
       }
     });
     if (existingParticipant) {
