@@ -736,7 +736,7 @@ exports.forgotPassword = async (req, res) => {
     const resetUrl = `${process.env.FRONTEND_URL}/resetPassword/${resetToken}`;
 
     // Envoyer l'email
-    await sendEmail(
+    const emailResult = await sendEmail(
       user.email,
       "Réinitialisation du mot de passe",
       "Demande de réinitialisation",
@@ -744,10 +744,15 @@ exports.forgotPassword = async (req, res) => {
       "L'équipe SUAS"
     );
 
+    if (!emailResult.success) {
+      return ResponseHandler.error(res, emailResult.error || "Erreur lors de l'envoi de l'email", "EMAIL_ERROR");
+    }
+
     return ResponseHandler.success(res, null, "Email de réinitialisation envoyé");
   } catch (err) {
-    console.error(err);
-    return ResponseHandler.error(res, "Erreur serveur");
+    console.error('Erreur lors de l\'envoi de l\'email:', err);
+    // return ResponseHandler.error(res, "Erreur serveur");
+    throw err;
   }
 };
 
