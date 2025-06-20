@@ -716,8 +716,8 @@ exports.forgotPassword = async (req, res) => {
         ],
       },
     });
-    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
-    if (!user.email) return res.status(404).json({ message: "Utilisateur trouvé n'a pas d'email" });
+    if (!user) return ResponseHandler.error(res, "Utilisateur non trouvé", "NOT_FOUND");
+    if (!user.email) return ResponseHandler.error(res, "Utilisateur trouvé n'a pas d'email", "NOT_FOUND");
 
     // Générer un token unique
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -740,16 +740,14 @@ exports.forgotPassword = async (req, res) => {
       user.email,
       "Réinitialisation du mot de passe",
       "Demande de réinitialisation",
-      `<p>Bonjour,</p>
-      <p>Pour réinitialiser votre mot de passe, cliquez sur le lien ci-dessous (valable 15 minutes) :</p>
-      <a href="${resetUrl}">${resetUrl}</a>`,
+      `<p>Bonjour,</p>\n      <p>Pour réinitialiser votre mot de passe, cliquez sur le lien ci-dessous (valable 15 minutes) :</p>\n      <a href="${resetUrl}">${resetUrl}</a>`,
       "L'équipe SUAS"
     );
 
-    res.status(200).json({ message: "Email de réinitialisation envoyé" });
+    return ResponseHandler.success(res, null, "Email de réinitialisation envoyé");
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Erreur serveur" });
+    return ResponseHandler.error(res, "Erreur serveur");
   }
 };
 
@@ -767,7 +765,7 @@ exports.resetPassword = async (req, res) => {
       }
     });
     if (!user) {
-      return res.status(400).json({ message: "Lien de réinitialisation invalide ou expiré." });
+      return ResponseHandler.error(res, "Lien de réinitialisation invalide ou expiré.", "BAD_REQUEST");
     }
 
     // Hashage du nouveau mot de passe
@@ -783,10 +781,10 @@ exports.resetPassword = async (req, res) => {
       }
     });
 
-    res.status(200).json({ message: "Mot de passe réinitialisé avec succès." });
+    return ResponseHandler.success(res, null, "Mot de passe réinitialisé avec succès.");
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Erreur serveur" });
+    return ResponseHandler.error(res, "Erreur serveur");
   }
 };
 
