@@ -733,7 +733,7 @@ exports.forgotPassword = async (req, res) => {
     });
 
     // Générer le lien de réinitialisation
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/resetPassword/${resetToken}`;
 
     // Envoyer l'email
     await sendEmail(
